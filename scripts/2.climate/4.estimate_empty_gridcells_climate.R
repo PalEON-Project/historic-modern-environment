@@ -35,14 +35,7 @@ df_clim <- dplyr::select(df_clim, -sfg_id, -point_id)
 # We will use this to interpolate when there are no soil
 # data points available for a grid cell
 # (This is very rare and basically limited to some large lakes)
-load('data/processed/climate/gridded_clim_il.RData')
-load('data/processed/climate/gridded_clim_in.RData')
-load('data/processed/climate/gridded_clim_mi.RData')
-load('data/processed/climate/gridded_clim_mn.RData')
-load('data/processed/climate/gridded_clim_wi.RData')
-
-# Combine gridded soil data
-clim_grid <- rbind(IL_clim_grid, IN_clim_grid, MI_clim_grid, MN_clim_grid, WI_clim_grid)
+load('data/processed/climate/gridded_climate.RData')
 
 # Loop over grid cells that don't have points
 for(i in 1:nrow(nopoints)){
@@ -98,45 +91,6 @@ for(i in 1:nrow(nopoints)){
 new_grid <- sf::st_as_sf(summ_xy, coords = c('p$x', 'p$y'),
                          crs = 'EPSG:3175')
 
-# Map of states
-states <- sf::st_as_sf(maps::map('state', region = c('illinois', 'indiana',
-                                                     'michigan', 'minnesota',
-                                                     'wisconsin'),
-                                 fill = TRUE, plot = FALSE))
-states <- sf::st_transform(states, crs = 'EPSG:3175')
-
-# Add state to data
-new_grid <- new_grid |>
-  sf::st_join(states)
-
-# Mannually add state for some points on the border
-new_grid$ID[1] <- 'illinois'
-new_grid$ID[7] <- 'illinois'
-new_grid$ID[8] <- 'illinois'
-new_grid$ID[10] <- 'illinois'
-new_grid$ID[26] <- 'indiana'
-new_grid$ID[177] <- 'indiana'
-new_grid$ID[436] <- 'illinois'
-new_grid$ID[473] <- 'indiana'
-new_grid$ID[494] <- 'indiana'
-new_grid$ID[616] <- 'illinois'
-new_grid$ID[669] <- 'michigan'
-new_grid$ID[670] <- 'michigan'
-new_grid$ID[671] <- 'michigan'
-new_grid$ID[672] <- 'michigan'
-new_grid$ID[673] <- 'michigan'
-new_grid$ID[674] <- 'michigan'
-new_grid$ID[723] <- 'michigan'
-new_grid$ID[766] <- 'minnesota'
-new_grid$ID[770] <- 'minnesota'
-new_grid$ID[771] <- 'minnesota'
-new_grid$ID[772] <- 'minnesota'
-new_grid$ID[773] <- 'minnesota'
-new_grid$ID[774] <- 'minnesota'
-new_grid$ID[775] <- 'minnesota'
-new_grid$ID[776] <- 'minnesota'
-new_grid$ID[777] <- 'minnesota'
-
 # Reproject
 new_grid <- sf::st_transform(new_grid, crs = 'EPSG:4326')
 
@@ -144,85 +98,15 @@ new_grid <- sf::st_transform(new_grid, crs = 'EPSG:4326')
 new_grid <- sfheaders::sf_to_df(new_grid, fill = TRUE)
 # Reformat
 new_grid <- new_grid |>
-  dplyr::rename(state = ID,
-                grid_id = `p$id`) |>
-  dplyr::select(state, grid_id, ppt_mean, ppt_sd,
-                tmean_mean, tmean_sd, tmin, tmax,
+  dplyr::rename(grid_id = `p$id`) |>
+  dplyr::select(grid_id, tmean_mean, tmean_sd,
+                ppt_mean, ppt_sd, tmin, tmax,
                 vpdmin, vpdmax, x, y)
 
-# Divide by state because that's how the soil data are stored
-IL_new_grid <- new_grid |>
-  dplyr::filter(state == 'illinois') |>
-  dplyr::select(-state)
-IN_new_grid <- new_grid |>
-  dplyr::filter(state == 'indiana') |>
-  dplyr::select(-state)
-MI_new_grid <- new_grid |>
-  dplyr::filter(state == 'michigan') |>
-  dplyr::select(-state)
-MN_new_grid <- new_grid |>
-  dplyr::filter(state == 'minnesota') |>
-  dplyr::select(-state)
-WI_new_grid <- new_grid |>
-  dplyr::filter(state == 'wisconsin') |>
-  dplyr::select(-state)
+all(colnames(clim_grid) == colnames(new_grid))
 
-# Add the grid cells without points to our already-formatted
-# gridded soil data
-IL_clim_grid <- rbind(IL_clim_grid, IL_new_grid)
-IN_clim_grid <- rbind(IN_clim_grid, IN_new_grid)
-MI_clim_grid <- rbind(MI_clim_grid, MI_new_grid)
-MN_clim_grid <- rbind(MN_clim_grid, MN_new_grid)
-WI_clim_grid <- rbind(WI_clim_grid, WI_new_grid)
+# Combine
+clim_grid <- rbind(clim_grid, new_grid)
 
-# Plot to make sure it looks good for each state
-il <- sf::st_as_sf(maps::map('state', region = 'illinois',
-                             fill = TRUE, plot = FALSE))
-il <- sf::st_transform(il, crs = 'EPSG:4326')
-
-IL_clim_grid |>
-  ggplot2::ggplot() +
-  ggplot2::geom_point(ggplot2::aes(x = x, y = y, color = ppt_mean)) +
-  ggplot2::geom_sf(data = il, color = 'black', fill = NA)
-
-IN <- sf::st_as_sf(maps::map('state', region = 'indiana',
-                             fill = TRUE, plot = FALSE))
-IN <- sf::st_transform(IN, crs = 'EPSG:4326')
-
-IN_clim_grid |>
-  ggplot2::ggplot() +
-  ggplot2::geom_point(ggplot2::aes(x = x, y = y, color = ppt_mean)) +
-  ggplot2::geom_sf(data = IN, color = 'black', fill = NA)
-
-mi <- sf::st_as_sf(maps::map('state', region = 'michigan',
-                             fill = TRUE, plot = FALSE))
-mi <- sf::st_transform(mi, crs = 'EPSG:4326')
-
-MI_clim_grid |>
-  ggplot2::ggplot() +
-  ggplot2::geom_point(ggplot2::aes(x = x, y = y, color = ppt_mean)) +
-  ggplot2::geom_sf(data = mi, color = 'black', fill = NA)
-
-mn <- sf::st_as_sf(maps::map('state', region = 'minnesota',
-                             fill = TRUE, plot = FALSE))
-mn <- sf::st_transform(mn, crs = 'EPSG:4326')
-
-MN_clim_grid |>
-  ggplot2::ggplot() +
-  ggplot2::geom_point(ggplot2::aes(x = x, y = y, color = ppt_mean)) +
-  ggplot2::geom_sf(data = mn, color = 'black', fill = NA)
-
-wi <- sf::st_as_sf(maps::map('state', region = 'wisconsin',
-                             fill = TRUE, plot = FALSE))
-wi <- sf::st_transform(wi, crs = 'EPSG:4326')
-
-WI_clim_grid |>
-  ggplot2::ggplot() +
-  ggplot2::geom_point(ggplot2::aes(x = x, y = y, color = ppt_mean)) +
-  ggplot2::geom_sf(data = wi, color = 'black', fill = NA)
-
-save(IL_clim_grid, file = 'data/processed/climate/gridded_clim_il.RData')
-save(IN_clim_grid, file = 'data/processed/climate/gridded_clim_in.RData')
-save(MI_clim_grid, file = 'data/processed/climate/gridded_clim_mi.RData')
-save(MN_clim_grid, file = 'data/processed/climate/gridded_clim_mn.RData')
-save(WI_clim_grid, file = 'data/processed/climate/gridded_clim_wi.RData')
+# Save
+save(clim_grid, file = 'data/processed/climate/gridded_climate.RData')
