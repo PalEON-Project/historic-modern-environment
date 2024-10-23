@@ -1,19 +1,19 @@
-## Preparing climate drivers
+## Preparing modern climate drivers
 
 rm(list = ls())
 
 # List all files that we want to read in ('bil' files)
-ppt_files <- list.files(path = '/Volumes/FileBackup/SDM_bigdata/PRISM/PRISM_ppt_stable_4kmM2_189501_198012_bil/', pattern = paste('.*_', '.*\\.bil$', sep = ''), full.names = TRUE)
-tmean_files <- list.files(path = '/Volumes/FileBackup/SDM_bigdata/PRISM/PRISM_tmean_stable_4kmM3_189501_198012_bil/', pattern = paste('.*_', '.*\\.bil$', sep = ''), full.names = TRUE)
-tmax_files <- list.files(path = '/Volumes/FileBackup/SDM_bigdata/PRISM/PRISM_tmax_stable_4kmM3_189501_198012_bil/', pattern = paste('.*_', '.*\\.bil$', sep = ''), full.names = TRUE)
-tmin_files <- list.files(path = '/Volumes/FileBackup/SDM_bigdata/PRISM/PRISM_tmin_stable_4kmM3_189501_198012_bil/', pattern = paste('.*_', '.*\\.bil$', sep = ''), full.names = TRUE)
-vpdmax_files <- list.files(path = '/Volumes/FileBackup/SDM_bigdata/PRISM/PRISM_vpdmax_stable_4kmM3_189501_198012_bil/', pattern = paste('.*_', '.*\\.bil$', sep = ''), full.names = TRUE)
+ppt_files <- list.files(path = '/Volumes/FileBackup/SDM_bigdata/PRISM_modern/PRISM_ppt_stable_4kmM3_198101_202403_bil/', pattern = paste('.*_', '.*\\.bil$', sep = ''), full.names = TRUE)
+tmean_files <- list.files(path = '/Volumes/FileBackup/SDM_bigdata/PRISM_modern/PRISM_tmean_stable_4kmM3_198101_202403_bil/', pattern = paste('.*_', '.*\\.bil$', sep = ''), full.names = TRUE)
+tmax_files <- list.files(path = '/Volumes/FileBackup/SDM_bigdata/PRISM_modern/PRISM_tmax_stable_4kmM3_198101_202403_bil/', pattern = paste('.*_', '.*\\.bil$', sep = ''), full.names = TRUE)
+tmin_files <- list.files(path = '/Volumes/FileBackup/SDM_bigdata/PRISM_modern/PRISM_tmin_stable_4kmM3_198101_202403_bil/', pattern = paste('.*_', '.*\\.bil$', sep = ''), full.names = TRUE)
+vpdmax_files <- list.files(path = '/Volumes/FileBackup/SDM_bigdata/PRISM_modern/PRISM_vpdmax_stable_4kmM3_198101_202403_bil/', pattern = paste('.*_', '.*\\.bil$', sep = ''), full.names = TRUE)
 all_files <- c(ppt_files, tmean_files, tmax_files, tmin_files, vpdmax_files)
 
 # Stack the files
 climate_stack <- raster::stack(all_files)
 
-# Extent of PLS data
+# Extent of FIA (and PLS) data
 ROU <- as(raster::extent(-98, -82, 36.9, 50), 'SpatialPolygons')
 
 # Clip
@@ -24,10 +24,10 @@ climate_points <- raster::rasterToPoints(climate_stack)
 
 # Save all points
 save(climate_points,
-     file = '/Volumes/FileBackup/SDM_bigdata/PRISM/climate_points.RData')
+     file = '/Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_points.RData')
 
 # Re-load saved data
-load('/Volumes/FileBackup/SDM_bigdata/PRISM/climate_points.RData')
+load('/Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_points.RData')
 
 # Reformat
 climate_points <- as.data.frame(climate_points)
@@ -46,7 +46,7 @@ climate_points <- dplyr::select(climate_points, -sfg_id, -point_id)
 
 # Format variables and time
 climate_long <- climate_points |>
-  tidyr::pivot_longer(PRISM_ppt_stable_4kmM2_189501_bil:PRISM_vpdmax_stable_4kmM3_191512_bil,
+  tidyr::pivot_longer(PRISM_ppt_stable_4kmM3_199501_bil:PRISM_vpdmax_stable_4kmM3_201512_bil,
                       names_to = 'yearmonvar', values_to = 'val') |>
   dplyr::mutate(start = sub(pattern = '_stable.*', replacement = '', x = yearmonvar),
                 var = sub(pattern = '.*PRISM_', replacement = '', x = start),
@@ -58,23 +58,22 @@ climate_long <- climate_points |>
   dplyr::select(var, year, month, val, x, y) |>
   tidyr::pivot_wider(names_from = 'var', values_from = 'val')
 
-# Summarize over monthly values for each year and location
-clim_annual <- climate_long |>
+# Add temperature in Kelvin
+clim <- climate_long |>
+  dplyr::mutate(tmean_k = tmean + 273.15)
+
+# Summarize over monthly values for each year and locaation
+clim_annual <- clim |>
   dplyr::group_by(x, y, year) |>
   dplyr::summarize(ppt_sum = sum(ppt),
                    ppt_sd = sd(ppt),
                    ppt_cv = ppt_sd / mean(ppt),
                    tmean_mean = mean(tmean),
                    tmean_sd = sd(tmean),
-                   tmean_cv = tmean_sd / tmean_mean,
+                   tmean_cv = sd(tmean_k) / mean(tmean_k),
                    tmin = min(tmin),
                    tmax = max(tmax),
                    vpdmax = max(vpdmax))
-
-# Check that mean temperature is never negative
-# If it is, you need to redo temperature cv and
-# convert temperature to kelvin before calculating cv
-any(clim_annual$tmean_mean < 0) # should be FALSE
 
 # Summarize over years for each location
 clim_sum <- clim_annual |>
@@ -87,11 +86,10 @@ clim_sum <- clim_annual |>
                    tmean_cv = mean(tmean_cv),
                    tmin = mean(tmin),
                    tmax = mean(tmax),
-                   vpdmax = mean(vpdmax)) |>
-  dplyr::mutate(tmean_cv = dl)
+                   vpdmax = mean(vpdmax))
 
 # Save
-save(clim_sum, file = '/Volumes/FileBackup/SDM_bigdata/PRISM/climate_summary.RData')
+save(clim_sum, file = '/Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_summary.RData')
 
 # Plot
 states <- sf::st_as_sf(maps::map('state', region = c('illinois', 'indiana',
@@ -153,5 +151,3 @@ clim_sum |>
   ggplot2::geom_point(ggplot2::aes(x = x, y = y, color = vpdmax)) +
   ggplot2::geom_sf(data = states, color = 'black', fill = NA) +
   ggplot2::theme_void()
-
-GGally::ggpairs(data = clim_sum, columns = 3:10)
