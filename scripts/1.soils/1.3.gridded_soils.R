@@ -1,18 +1,56 @@
-## Matching ggSSURGO and PLS spatially
+#### STEP 1-3
+
+## Aggregating gSSURGO soil variables to PalEON grid
+
+## 1. Load soil data
+## 2. Plotting checks of soil variables
+## 3. Format soil variables
+## 4. Load gridded vegetation data
+## 5. Extract coordinates
+## 6. Match soil data to grid cells
+## 7. Plot soil variables
+## 8. Estimate grid cells with no gSSURGO observations
+## 9. Save
+
+## Input: data/raw/soils/gssurgo_average_030_700m.RData
+## Dataframe of soil variables on 700 x 700 m grid
+
+## Input: data/raw/soils/gssurgo_floodplain_030_700m.RData
+## Dataframe of floodplain presence variable on 700 x 700 m grid
+
+## Input: ~/Google Drive 2/environ-veg-prediction/data/processed/FIA/gridded_all_plots.RData
+## Grid cells in the standard PalEON grid from modern time period
+## This is from the repository https://github.com/amwillson/environ-veg-prediction/
+
+## Input: ~/Google Drive 2/environ-veg-prediction/data/processed/PLS/gridded_fcomp_density.RData
+## Grid cells in the standard PalEON grid from the historical time period
+## This is from the repository https://github.com/amwillson/environ-veg-prediction/
+
+## Output: data/processed/soils/gridded_soil.RData
+## Dataframe of soil variables aggregated to the PalEON 8 x 8 km grid
+## This is exported to the repository https://github.com/amwillson/environ-veg-prediction/
+## And additionally used for other PalEON projects requiring gridded soil products
 
 rm(list = ls())
+
+#### 1. Load soil data ####
 
 # Load soil data
 load('data/raw/soils/gssurgo_average_030_700m.RData')
 
 # Combine soil estimates for all states
-df_soil <- rbind(df_IL, df_IN, df_MI, df_MN, df_WI)
+df_soil3 <- rbind(df_IL, df_IN, df_MI, df_MN, df_WI)
 
 # Load floodplain data
 load('data/raw/soils/gssurgo_floodplain_030_700m.RData')
 
 # Combine floodplain estimates for all states
 df_flood <- rbind(df_IL, df_IN, df_MI, df_MN, df_WI)
+
+#### 2. Plotting checks of soil variables ####
+
+## Simply checking coordinate system
+## Data should just match up with state outlines here
 
 # Outline of states
 states <- sf::st_as_sf(maps::map(database = 'state',
@@ -37,6 +75,8 @@ df_flood |>
   ggplot2::geom_sf(data = states, color = 'black', fill = NA) +
   ggplot2::theme_void()
 
+#### 3. Format soil variables ####
+
 # Transform
 df_soil <- sf::st_as_sf(df_soil,
                         coords = c('x', 'y'),
@@ -51,6 +91,11 @@ df_flood <- sf::st_as_sf(df_flood,
 df_flood <- sf::st_transform(df_flood, crs = 'EPSG:3175')
 df_flood <- sfheaders::sf_to_df(df_flood, fill = TRUE)
 df_flood <- dplyr::select(df_flood, -sfg_id, -point_id)
+
+#### 4. Load gridded vegetation data ####
+
+## The following variables are available at
+## https://github.com/amwillson/environ-veg-prediction/
 
 # Load gridded FIA data from other repository
 load('~/Google Drive 2/environ-veg-prediction/data/processed/FIA/gridded_all_plots.RData')
@@ -78,6 +123,8 @@ veg_unique_grid <- rbind(fia_unique_grid, pls_unique_grid)
 # Remove duplicate grid cells
 veg_unique_grid <- dplyr::distinct(veg_unique_grid)
 
+#### 5. Extract coordinates ####
+
 # Soil coords
 soil_coords <- df_soil |>
   dplyr::select(x, y) |>
@@ -91,6 +138,8 @@ flood_coords <- df_flood |>
 # Vegetation coords
 veg_coords <- veg_unique_grid |>
   dplyr::select(x, y)
+
+#### 6. Match soil data to grid cells ####
 
 # For each veg grid cell, find all climate points occurring within
 for(i in 1:nrow(veg_unique_grid)){
@@ -124,6 +173,8 @@ for(i in 1:nrow(veg_unique_grid)){
   
   print(i)
 }
+
+#### 7. Plot soil variables ####
 
 ## Plot soil variables to ensure geographical patterns make sense
 ## given our understanding of soil properties in this region
@@ -193,6 +244,8 @@ veg_unique_grid |>
   ggplot2::ggtitle('Proportion of grid cell in a floodplain') +
   ggplot2::theme_void() +
   ggplot2::theme(plot.title = ggplot2::element_text(size = 16, hjust = 0.5, face = 'bold'))
+
+#### 8. Estimate grid cells with no gSSURGO observations ####
 
 # Grid cells with no data
 nodata <- dplyr::filter(veg_unique_grid, is.na(clay))
@@ -293,6 +346,8 @@ veg_unique_grid |>
   ggplot2::ggtitle('Proportion of grid cell in a floodplain') +
   ggplot2::theme_void() +
   ggplot2::theme(plot.title = ggplot2::element_text(size = 16, hjust = 0.5, face = 'bold'))
+
+#### 9. Save ####
 
 # Save
 save(veg_unique_grid,

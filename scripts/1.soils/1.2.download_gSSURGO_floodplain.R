@@ -1,8 +1,27 @@
-# Downloading data on the presence of floodplain from gSSURGO
-# same as gSSURGO soil routine except you need to specfic
-# method = 'Dominant Component (Category)' because it's a categorical variable
+#### STEP 1-2
+
+## Downloading data on the presence of floodplain from gSSURGO
+## same as gSSURGO soil routine except you need to specfic
+## method = 'Dominant Component (Category)' because it's a categorical variable
+
+## 1. Define geographic extent
+## 2. Fetch map unit keys
+## 3. Extract RAT
+## 4. Extract geomdesc variable
+## 5. Format
+## 6. Extract floodplain variable
+## 7. Save
+
+## Input: none. Downloaded directly in the script
+
+## Output: data/raw/soils/gssurgo_floodplain_030_700m.RData
+## Floodplain variable for 0-30 cm depth for all five states
+## in the geographic domain
+## Used in 1.3.gridded_soils.R
 
 rm(list = ls())
+
+#### 1. Define geographic extent ####
 
 # Helper function for dividing the state into four quadrants
 source('scripts/1.soils/define_bounds.R')
@@ -167,6 +186,8 @@ a_WI4 <- sf::st_bbox(
   crs = sf::st_crs(4326)
 )
 
+#### 2. Fetch map unit keys ####
+
 # fetch gSSURGO map unit keys at 100m resolution 
 # (highest possible = 30m, lowest possible = 3000m)
 # highest resolution possible for all states
@@ -197,6 +218,8 @@ mu_WI2 <- soilDB::mukey.wcs(list(aoi = a_WI2, crs = 'EPSG:4326'), db = 'gssurgo'
 mu_WI3 <- soilDB::mukey.wcs(list(aoi = a_WI3, crs = 'EPSG:4326'), db = 'gssurgo', res = 700)
 mu_WI4 <- soilDB::mukey.wcs(list(aoi = a_WI4, crs = 'EPSG:4326'), db = 'gssurgo', res = 700)
 
+#### 3. Extract RAT ####
+
 # extract RAT for thematic mapping for each state
 rat_IL1 <- terra::cats(mu_IL1)[[1]]
 rat_IL2 <- terra::cats(mu_IL2)[[1]]
@@ -222,6 +245,8 @@ rat_WI1 <- terra::cats(mu_WI1)[[1]]
 rat_WI2 <- terra::cats(mu_WI2)[[1]]
 rat_WI3 <- terra::cats(mu_WI3)[[1]]
 rat_WI4 <- terra::cats(mu_WI4)[[1]]
+
+#### 4. Extract geomdesc variable ####
 
 # property = geomdesc (I learned this would work by following the procedure
 # described here: https://www.nrcs.usda.gov/sites/default/files/2022-08/gSSURGO_UserGuide_July2020.pdf
@@ -360,6 +385,8 @@ levels(mu_WI2) <- tab_WI2[, c('mukey', 'geomdesc')]
 levels(mu_WI3) <- tab_WI3[, c('mukey', 'geomdesc')]
 levels(mu_WI4) <- tab_WI4[, c('mukey', 'geomdesc')]
 
+#### 5. Format ####
+
 # reproject
 ssc_IL1 <- terra::project(x = mu_IL1, 'EPSG:4326')
 ssc_IL2 <- terra::project(x = mu_IL2, 'EPSG:4326')
@@ -418,6 +445,8 @@ df_IN <- rbind(df_IN1, df_IN2, df_IN3, df_IN4)
 df_MI <- rbind(df_MI1, df_MI2, df_MI3, df_MI4)
 df_MN <- rbind(df_MN1, df_MN2, df_MN3, df_MN4)
 df_WI <- rbind(df_WI1, df_WI2, df_WI3, df_WI4)
+
+#### 6. Extract floodplain variable ####
 
 # Extract mention of "floodplain" from geomdesc
 df_IL <- df_IL |>
@@ -500,6 +529,8 @@ df_WI |>
   ggplot2::geom_point(ggplot2::aes(x = x, y = y), shape = '.') +
   ggplot2::geom_sf(data = states, color = 'black', fill = NA) +
   ggplot2::theme_void()
+
+#### 7. Save ####
 
 # Everything looks good, save
 save(df_IL, df_IN, df_MI, df_MN, df_WI,

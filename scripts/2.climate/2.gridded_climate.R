@@ -140,7 +140,7 @@ veg_unique_grid |>
   ggplot2::theme(plot.title = ggplot2::element_text(size = 16, hjust = 0.5, face = 'bold'))
 
 veg_unique_grid |>
-  #dplyr::mutate(tmean_cv = tmean_cv * 100) |>
+  dplyr::mutate(tmean_cv = tmean_cv * 100) |>
   ggplot2::ggplot() +
   ggplot2::geom_sf(data = states, color = NA, fill = 'grey85') +
   ggplot2::geom_tile(ggplot2::aes(x = x, y = y, fill = tmean_cv)) +
