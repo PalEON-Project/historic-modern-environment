@@ -1,15 +1,43 @@
-## Matching climate and PLS/FIA spatially
+#### STEP 2-2
+
+## Aggregating climate estimates to PalEON grid
+
+## 1. Load data
+## 2. Unique grid cells
+## 3. Assign climate to grid cells
+## 4. Plotting check
+## 5. Save
+
+## Input: /Volumes/FileBackup/SDM_bigdata/PRISM/climate_summary.RData
+## Dataframe with temporal climate summaries at native PRISM resolution
+
+## Input: ~/Google Drive 2/environ-veg-prediction/data/processed/FIA/gridded_all_plots.RData
+## Dataframe with 8 x 8 km grid cells in the modern time period
+## This is from the repository https://github.com/amwillson/environ-veg-prediction/
+
+## Input: ~/Google Drive 2/environ-veg-prediction/data/processed/PLS/gridded_fcomp_density.RData
+## Dataframe with 8 x 8 km grid cells in the historic time period
+## This is from the repository https://github.com/amwillson/environ-veg-prediction
+
+## Output: data/processed/climate/gridded_climate.Rdata
+## Dataframe of climate estimates aggregate to the PalEON 8 x 8 km grid
+## Used in the repository https://github.com/amwillson/environ-veg-prediction/
+## and for other PalEON projects
 
 rm(list = ls())
 
-# Load climate estimates
-load('/Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_summary.RData')
+#### 1. Load data ####
+
+# Load climate reconstructions
+load('/Volumes/FileBackup/SDM_bigdata/PRISM/climate_summary.RData')
 
 # Load gridded FIA data from other repository
 load('~/Google Drive 2/environ-veg-prediction/data/processed/FIA/gridded_all_plots.RData')
 
 # Load gridded PLS data from other repository
 load('~/Google Drive 2/environ-veg-prediction/data/processed/PLS/gridded_fcomp_density.RData')
+
+#### 2. Unique grid cells ####
 
 # Take unique grid cells from both
 # (There are some grid cells in FIA that are not in PLS
@@ -39,6 +67,8 @@ clim_coords <- clim_sum |>
 # Vegetation coords
 veg_coords <- veg_unique_grid |>
   dplyr::select(x, y)
+
+#### 3. Assign climate to grid cells ####
 
 # For each veg grid cell, find all climate points occurring within
 for(i in 1:nrow(veg_unique_grid)){
@@ -70,6 +100,8 @@ for(i in 1:nrow(veg_unique_grid)){
   
   print(i)
 }
+
+#### 4. Plotting checks ####
 
 # State outlines
 states <- sf::st_as_sf(maps::map(database = 'state',
@@ -184,6 +216,8 @@ veg_unique_grid |>
   ggplot2::theme_void() +
   ggplot2::theme(plot.title = ggplot2::element_text(size = 16, hjust = 0.5, face = 'bold'))
 
+#### 5. Save ####
+
 # Save
 save(veg_unique_grid,
-     file = 'data/processed/climate/gridded_climate_modern.Rdata')
+     file = 'data/processed/climate/gridded_climate.Rdata')

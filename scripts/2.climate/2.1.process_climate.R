@@ -1,6 +1,43 @@
-## Preparing climate drivers
+#### STEP 2-1
+
+## Preparing climate drivers downloaded from PRISM
+## Climate estimates downloaded from PRISM website in February 2024
+## Formatting into dataframe and doing plotting checks
+
+## 1. Loading climate data
+## 2. Formatting climate data
+## 3. Summarizing climate over time
+## 4. Save
+## 5. Plotting checks
+
+## Input: .bil files in /Volumes/FileBackup/SDM_bigdata/PRISM/PRISM_ppt_stable_4kmM2_189501_198012_bil/
+## PRISM estimates of total monthly precipitation for the period 1895-1915
+
+## Input: .bil files in /Volumes/FileBackup/SDM_bigdata/PRISM/PRISM_tmean_stable_4kmM3_189501_198012_bil/
+## PRISM estimates of mean monthly temperature for the period 1895-1915
+
+## Input: .bil files in /Volumes/FileBackup/SDM_bigdata/PRISM/PRISM_tmax_stable_4kmM3_189501_198012_bil/
+## PRISM estimates of maximum monthly temperature for the period 1895-1915
+
+## Input: .bil files in /Volumes/FileBackup/SDM_bigdata/PRISM/PRISM_tmin_stable_4kmM3_189501_198012_bil/
+## PRISM estimates of minimum monthly temperature for the period 1895-1915
+
+## Input: .bil files in /Volumes/FileBackup/SDM_bigdata/PRISM/PRISM_vpdmax_stable_4kmM3_189501_198012_bil/
+## PRISM estimates of maximum monthly vapor pressure deficit for the period 1895-1915
+
+## Output: /Volumes/FileBackup/SDM_bigdata/PRISM/climate_points.RData
+## Monthly estimates of climate drivers in the native scale of PRISM data
+## This is not used. It is saved so that I don't have to re-run the
+## steps of loading in the data because it takes a long time to convert to points
+
+## Output: /Volumes/FileBackup/SDM_bigdata/PRISM/climate_summary.RData
+## Temporal summaries of climate variables over months of the year and years
+## in this time period, still on the PRISM native resolution
+## Used in 2.2.gridded_climate.R
 
 rm(list = ls())
+
+#### 1. Loading climate data ####
 
 # List all files that we want to read in ('bil' files)
 ppt_files <- list.files(path = '/Volumes/FileBackup/SDM_bigdata/PRISM/PRISM_ppt_stable_4kmM2_189501_198012_bil/', pattern = paste('.*_', '.*\\.bil$', sep = ''), full.names = TRUE)
@@ -25,6 +62,8 @@ climate_points <- raster::rasterToPoints(climate_stack)
 # Save all points
 save(climate_points,
      file = '/Volumes/FileBackup/SDM_bigdata/PRISM/climate_points.RData')
+
+#### 2. Formatting climate data ####
 
 # Re-load saved data
 load('/Volumes/FileBackup/SDM_bigdata/PRISM/climate_points.RData')
@@ -58,6 +97,8 @@ climate_long <- climate_points |>
   dplyr::select(var, year, month, val, x, y) |>
   tidyr::pivot_wider(names_from = 'var', values_from = 'val')
 
+#### 3. Summarizing climate over time ####
+
 # Summarize over monthly values for each year and location
 clim_annual <- climate_long |>
   dplyr::group_by(x, y, year) |>
@@ -90,8 +131,12 @@ clim_sum <- clim_annual |>
                    vpdmax = mean(vpdmax)) |>
   dplyr::mutate(tmean_cv = dl)
 
+#### 4. Save ####
+
 # Save
 save(clim_sum, file = '/Volumes/FileBackup/SDM_bigdata/PRISM/climate_summary.RData')
+
+#### 5. Plotting checks ####
 
 # Plot
 states <- sf::st_as_sf(maps::map('state', region = c('illinois', 'indiana',
