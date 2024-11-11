@@ -45,6 +45,26 @@ All packages can be installed using the install_packages.R script. When possible
 - soils: processed soil products aggregated to the 8 x 8 km grid
     - gridded_soil.RData: gridded soil estimates (soil texture, soil calcium carbonate concentration, soil available water content, and fraction of each grid cell in a floodplain)
 
+### SDM_bigdata/PRISM/: raw PRISM downloads stored on external drive
+
+- PRISM_ppt_stable_4kmM2_189501_198012_bil/: folder containing .bil files with PRISM estimates of total monthly precipitation. Only files for months between 1895-1915 were kept
+- PRISM_tmax_stable_4kmM3_189501_198012_bil/: folder containing .bil files with PRISM estimates of maximum monthly temperature. Only files for months between 1895-1915 were kept
+- PRISM_tmean_stable_4kmM3_189501_198012_bil/: folder containing .bil files with PRISM estimates of mean monthly temperature. Only files for months between 1895-1915 were kept
+- PRISM_tmin_stable_4kmM3_189501_198012_bil/: folder containing .bil files with PRISM estimates of minimum monthly temperature. Only files for months between 1895-1915 were kept
+- PRISM_vpdmax_stable_4kmM3_189501_198012_bil/: folder containing .bil files with PRISM estimates of maximum monthly vapor pressure deficit. Only files for months between 1895-1915 were kept
+- climate_points.RData: intermediate data product with PRISM climate data in dataframe format
+- climate_summary.RData: intermediate data product with PRISM climate aggregated over time in dataframe format
+
+### SDM_bigdata/PRISM_modern/: raw PRISM downloads for modern period stored on external drive
+
+- PRISM_ppt_stable_4kmM3_198101_202403_bil/: folder containing .bil files with PRISM estimates of total monthly precipitation. Only files for months between 1995-2015 were kept
+- PRISM_tmax_stable_4kmM3_198101_202403_bil/: folder containing .bil files with PRISM estimates of maximum monthly temperature. Only files for months between 1995-2015 were kept
+- PRISM_tmean_stable_4kmM3_198101_202403_bil/: folder containing .bil files with PRISM estimates of mean monthly temperature. Only files for months between 1995-2015 were kept
+- PRISM_tmin_stable_4kmM3_198101_202403_bil/: folder containing .bil files with PRISM estimates of minimum monthly temperature. Only files for months between 1995-2015 were kept
+- PRISM_vpdmax_stable_4kmM3_198101_202403_bil/: folder containing .bil files with PRISM estimates of maximum monthly vapor pressure deficit. Only files for months between 1995-2015 were kept
+- climate_points.RData: intermediate data product with PRISM climate data in dataframe format
+- climate_summary.RData: intermediate data product with PRISM climate aggregated over time in dataframe format
+
 ## scripts
 
 Code for downloading and processing data. The code is broken into two sections. The first section (**1.soils**) downloads, formats, and aggregates the soil variable estimates from gSSURGO to the 8 x 8 km PalEON grid. The second section (**2.climate**) formats and aggregates the climate variable estimtates from PRISM over time and to the 8 x 8 km PalEON grid. The directory additionaly includes two helper files (**install_packages.R** and **1.soils/define_bounds.R**) for installing required packages, including versions, and dividing states into subsections for downloading soil data, respectively.
