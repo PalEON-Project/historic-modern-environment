@@ -4,6 +4,11 @@
 ## Data processing has to proceed directly from downloads or you get error
 ## "external pointer is not valid"
 
+## Note that this step was originally performed in spring 2024
+## Updates to the gSSURGO data products only have created issues
+## to the data product. This step should NOT be rerun and saved over
+## the existing output, which is the correct data
+
 ## 1. Define geographic extent
 ## 2. Fetch map unit keys
 ## 3. Extract RAT
