@@ -33,7 +33,7 @@
 ## Output: /Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_summary.RData
 ## Temporal summaries of modern climate variables over months of the year and years
 ## in this time period, still on the PRISM native resolution
-## Used in 2.4.gridded_climate.R
+## Used in 2.4.gridded_modern_climate.R
 
 rm(list = ls())
 
