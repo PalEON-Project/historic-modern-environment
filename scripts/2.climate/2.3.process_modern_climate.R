@@ -11,19 +11,19 @@
 ## 5. Plotting checks
 
 ## Input: .bil files in /Volumes/FileBackup/SDM_bigdata/PRISM_modern/PRISM_ppt_stable_4kmM3_198101_202403_bil/
-## PRISM estimates of total monthly precipitation for the period 1895-1915
+## PRISM estimates of total monthly precipitation for the period 1995-2015
 
 ## Input: .bil files in /Volumes/FileBackup/SDM_bigdata/PRISM_modern/PRISM_tmean_stable_4kmM3_198101_202403_bil/
-## PRISM estimates of mean monthly temperature for the period 1895-1915
+## PRISM estimates of mean monthly temperature for the period 1995-2015
 
 ## Input: .bil files in /Volumes/FileBackup/SDM_bigdata/PRISM_modern/PRISM_tmax_stable_4kmM3_198101_202403_bil/
-## PRISM estimates of maximum monthly temperature for the period 1895-1915
+## PRISM estimates of maximum monthly temperature for the period 1995-2015
 
 ## Input: .bil files in /Volumes/FileBackup/SDM_bigdata/PRISM_modern/PRISM_tmin_stable_4kmM3_198101_202403_bil/
-## PRISM estimates of minimum monthly temperature for the period 1895-1915
+## PRISM estimates of minimum monthly temperature for the period 1995-2015
 
 ## Input: .bil files in /Volumes/FileBackup/SDM_bigdata/PRISM_modern/PRISM_vpdmax_stable_4kmM3_198101_202403_bil/
-## PRISM estimates of maximum monthly vapor pressure deficit for the period 1895-1915
+## PRISM estimates of maximum monthly vapor pressure deficit for the period 1995-2015
 
 ## Output: /Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_points.RData
 ## Monthly estimates of modern climate drivers in the native scale of PRISM data
