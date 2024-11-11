@@ -1,8 +1,31 @@
-# Downloading data on the presence of floodplain from gSSURGO
-# same as gSSURGO soil routine except you need to specfic
-# method = 'Dominant Component (Category)' because it's a categorical variable
+#### STEP 1-1
+
+## Downloading data for each state in the Upper Midwest region of interest
+## Data processing has to proceed directly from downloads or you get error
+## "external pointer is not valid"
+
+## Note that this step was originally performed in spring 2024
+## Updates to the gSSURGO data products only have created issues
+## to the data product. This step should NOT be rerun and saved over
+## the existing output, which is the correct data
+
+## 1. Define geographic extent
+## 2. Fetch map unit keys
+## 3. Extract RAT
+## 4. Extract soil variables
+## 5. Format
+## 6. Save
+
+## Input: none. Downloaded using script
+
+## Output: data/raw/soils/gssurgo_average_030_700m.RData
+## Soil variables for 0-30 cm depth for all five states
+## in our geographic domain
+## Used in 1.3.gridded_soils.R
 
 rm(list = ls())
+
+#### 1. Define geographic extent ####
 
 # Helper function for dividing the state into four quadrants
 source('scripts/1.soils/define_bounds.R')
@@ -15,7 +38,7 @@ source('scripts/1.soils/define_bounds.R')
 
 # Split IL into four quadrants
 IL <- define_quadrants(xmin = -91.514, xmax = -87.4947,
-                       ymin = 36.9704, ymax = 42.5088)
+                    ymin = 36.9704, ymax = 42.5088)
 
 # Extract min & max lat/long coords for each quadrant
 IL1 <- IL[[1]]
@@ -167,6 +190,8 @@ a_WI4 <- sf::st_bbox(
   crs = sf::st_crs(4326)
 )
 
+#### 2. Fetch map unit keys ####
+
 # fetch gSSURGO map unit keys at 100m resolution 
 # (highest possible = 30m, lowest possible = 3000m)
 # highest resolution possible for all states
@@ -197,6 +222,8 @@ mu_WI2 <- soilDB::mukey.wcs(list(aoi = a_WI2, crs = 'EPSG:4326'), db = 'gssurgo'
 mu_WI3 <- soilDB::mukey.wcs(list(aoi = a_WI3, crs = 'EPSG:4326'), db = 'gssurgo', res = 700)
 mu_WI4 <- soilDB::mukey.wcs(list(aoi = a_WI4, crs = 'EPSG:4326'), db = 'gssurgo', res = 700)
 
+#### 3. Extract RAT ####
+
 # extract RAT for thematic mapping for each state
 rat_IL1 <- terra::cats(mu_IL1)[[1]]
 rat_IL2 <- terra::cats(mu_IL2)[[1]]
@@ -223,168 +250,196 @@ rat_WI2 <- terra::cats(mu_WI2)[[1]]
 rat_WI3 <- terra::cats(mu_WI3)[[1]]
 rat_WI4 <- terra::cats(mu_WI4)[[1]]
 
-# property = geomdesc (I learned this would work by following the procedure
-# described here: https://www.nrcs.usda.gov/sites/default/files/2022-08/gSSURGO_UserGuide_July2020.pdf
-# in GIS and realizing that the component table has the variable geomdesc
-# which is matched to more specific features in cogeomordesc table
-# so we can just skip the cogeomordesc table and extract presence of floodplain
-# from geomdesc, which is a property, while cogeomordesc is not)
-tab_IL1 <- soilDB::get_SDA_property(property = 'geomdesc',
+vars <- c('claytotal_r', 'sandtotal_r', 'silttotal_r', 'caco3_r', 'awc_r')
+
+#### 4. Extract soil variables ####
+
+# method = weighted average
+# depth = 0-30cm
+tab_IL1 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_IL1$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_IL2 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_IL2 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_IL2$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_IL3 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_IL3 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_IL3$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_IL4 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_IL4 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_IL4$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
+                                    bottom_depth = 30)
 
-tab_IN1 <- soilDB::get_SDA_property(property = 'geomdesc',
+tab_IN1 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_IN1$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_IN2 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_IN2 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_IN2$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_IN3 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_IN3 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_IN3$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_IN4 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_IN4 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_IN4$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
+                                    bottom_depth = 30)
 
-tab_MI1 <- soilDB::get_SDA_property(property = 'geomdesc',
+tab_MI1 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_MI1$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_MI2 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_MI2 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_MI2$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_MI3 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_MI3 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_MI3$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_MI4 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_MI4 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_MI4$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
+                                    bottom_depth = 30)
 
-tab_MN1 <- soilDB::get_SDA_property(property = 'geomdesc',
+tab_MN1 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_MN1$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_MN2 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_MN2 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_MN2$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_MN3 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_MN3 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_MN3$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_MN4 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_MN4 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_MN4$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
+                                    bottom_depth = 30)
 
-tab_WI1 <- soilDB::get_SDA_property(property = 'geomdesc',
+tab_WI1 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_WI1$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_WI2 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_WI2 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_WI2$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_WI3 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_WI3 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_WI3$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
-tab_WI4 <- soilDB::get_SDA_property(property = 'geomdesc',
+                                    bottom_depth = 30)
+tab_WI4 <- soilDB::get_SDA_property(property = vars,
+                                    method = 'Weighted Average',
                                     mukeys = as.integer(rat_WI4$mukey),
                                     top_depth = 0,
-                                    bottom_depth = 30,
-                                    method = 'Dominant Component (Category)')
+                                    bottom_depth = 30)
 
-# Set raster categories
-levels(mu_IL1) <- tab_IL1[, c('mukey', 'geomdesc')]
-levels(mu_IL2) <- tab_IL2[, c('mukey', 'geomdesc')]
-levels(mu_IL3) <- tab_IL3[, c('mukey', 'geomdesc')]
-levels(mu_IL4) <- tab_IL4[, c('mukey', 'geomdesc')]
+# set raster categories
+levels(mu_IL1) <- tab_IL1[, c('mukey', vars)]
+levels(mu_IL2) <- tab_IL2[, c('mukey', vars)]
+levels(mu_IL3) <- tab_IL3[, c('mukey', vars)]
+levels(mu_IL4) <- tab_IL4[, c('mukey', vars)]
 
-levels(mu_IN1) <- tab_IN1[, c('mukey', 'geomdesc')]
-levels(mu_IN2) <- tab_IN2[, c('mukey', 'geomdesc')]
-levels(mu_IN3) <- tab_IN3[, c('mukey', 'geomdesc')]
-levels(mu_IN4) <- tab_IN4[, c('mukey', 'geomdesc')]
+levels(mu_IN1) <- tab_IN1[, c('mukey', vars)]
+levels(mu_IN2) <- tab_IN2[, c('mukey', vars)]
+levels(mu_IN3) <- tab_IN3[, c('mukey', vars)]
+levels(mu_IN4) <- tab_IN4[, c('mukey', vars)]
 
-levels(mu_MI1) <- tab_MI1[, c('mukey', 'geomdesc')]
-levels(mu_MI2) <- tab_MI2[, c('mukey', 'geomdesc')]
-levels(mu_MI3) <- tab_MI3[, c('mukey', 'geomdesc')]
-levels(mu_MI4) <- tab_MI4[, c('mukey', 'geomdesc')]
+levels(mu_MI1) <- tab_MI1[, c('mukey', vars)]
+levels(mu_MI2) <- tab_MI2[, c('mukey', vars)]
+levels(mu_MI3) <- tab_MI3[, c('mukey', vars)]
+levels(mu_MI4) <- tab_MI4[, c('mukey', vars)]
 
-levels(mu_MN1) <- tab_MN1[, c('mukey', 'geomdesc')]
-levels(mu_MN2) <- tab_MN2[, c('mukey', 'geomdesc')]
-levels(mu_MN3) <- tab_MN3[, c('mukey', 'geomdesc')]
-levels(mu_MN4) <- tab_MN4[, c('mukey', 'geomdesc')]
+levels(mu_MN1) <- tab_MN1[, c('mukey', vars)]
+levels(mu_MN2) <- tab_MN2[, c('mukey', vars)]
+levels(mu_MN3) <- tab_MN3[, c('mukey', vars)]
+levels(mu_MN4) <- tab_MN4[, c('mukey', vars)]
 
-levels(mu_WI1) <- tab_WI1[, c('mukey', 'geomdesc')]
-levels(mu_WI2) <- tab_WI2[, c('mukey', 'geomdesc')]
-levels(mu_WI3) <- tab_WI3[, c('mukey', 'geomdesc')]
-levels(mu_WI4) <- tab_WI4[, c('mukey', 'geomdesc')]
+levels(mu_WI1) <- tab_WI1[, c('mukey', vars)]
+levels(mu_WI2) <- tab_WI2[, c('mukey', vars)]
+levels(mu_WI3) <- tab_WI3[, c('mukey', vars)]
+levels(mu_WI4) <- tab_WI4[, c('mukey', vars)]
+
+#### 5. Format ####
+
+# stack of numerical grids
+ssc_IL1 <- terra::catalyze(mu_IL1)
+ssc_IL2 <- terra::catalyze(mu_IL2)
+ssc_IL3 <- terra::catalyze(mu_IL3)
+ssc_IL4 <- terra::catalyze(mu_IL4)
+
+ssc_IN1 <- terra::catalyze(mu_IN1)
+ssc_IN2 <- terra::catalyze(mu_IN2)
+ssc_IN3 <- terra::catalyze(mu_IN3)
+ssc_IN4 <- terra::catalyze(mu_IN4)
+
+ssc_MI1 <- terra::catalyze(mu_MI1)
+ssc_MI2 <- terra::catalyze(mu_MI2)
+ssc_MI3 <- terra::catalyze(mu_MI3)
+ssc_MI4 <- terra::catalyze(mu_MI4)
+
+ssc_MN1 <- terra::catalyze(mu_MN1)
+ssc_MN2 <- terra::catalyze(mu_MN2)
+ssc_MN3 <- terra::catalyze(mu_MN3)
+ssc_MN4 <- terra::catalyze(mu_MN4)
+
+ssc_WI1 <- terra::catalyze(mu_WI1)
+ssc_WI2 <- terra::catalyze(mu_WI2)
+ssc_WI3 <- terra::catalyze(mu_WI3)
+ssc_WI4 <- terra::catalyze(mu_WI4)
 
 # reproject
-ssc_IL1 <- terra::project(x = mu_IL1, 'EPSG:4326')
-ssc_IL2 <- terra::project(x = mu_IL2, 'EPSG:4326')
-ssc_IL3 <- terra::project(x = mu_IL3, 'EPSG:4326')
-ssc_IL4 <- terra::project(x = mu_IL4, 'EPSG:4326')
+ssc_IL1 <- terra::project(x = ssc_IL1, 'EPSG:4326')
+ssc_IL2 <- terra::project(x = ssc_IL2, 'EPSG:4326')
+ssc_IL3 <- terra::project(x = ssc_IL3, 'EPSG:4326')
+ssc_IL4 <- terra::project(x = ssc_IL4, 'EPSG:4326')
 
-ssc_IN1 <- terra::project(x = mu_IN1, 'EPSG:4326')
-ssc_IN2 <- terra::project(x = mu_IN2, 'EPSG:4326')
-ssc_IN3 <- terra::project(x = mu_IN3, 'EPSG:4326')
-ssc_IN4 <- terra::project(x = mu_IN4, 'EPSG:4326')
+ssc_IN1 <- terra::project(x = ssc_IN1, 'EPSG:4326')
+ssc_IN2 <- terra::project(x = ssc_IN2, 'EPSG:4326')
+ssc_IN3 <- terra::project(x = ssc_IN3, 'EPSG:4326')
+ssc_IN4 <- terra::project(x = ssc_IN4, 'EPSG:4326')
 
-ssc_MI1 <- terra::project(x = mu_MI1, 'EPSG:4326')
-ssc_MI2 <- terra::project(x = mu_MI2, 'EPSG:4326')
-ssc_MI3 <- terra::project(x = mu_MI3, 'EPSG:4326')
-ssc_MI4 <- terra::project(x = mu_MI4, 'EPSG:4326')
+ssc_MI1 <- terra::project(x = ssc_MI1, 'EPSG:4326')
+ssc_MI2 <- terra::project(x = ssc_MI2, 'EPSG:4326')
+ssc_MI3 <- terra::project(x = ssc_MI3, 'EPSG:4326')
+ssc_MI4 <- terra::project(x = ssc_MI4, 'EPSG:4326')
 
-ssc_MN1 <- terra::project(x = mu_MN1, 'EPSG:4326')
-ssc_MN2 <- terra::project(x = mu_MN2, 'EPSG:4326')
-ssc_MN3 <- terra::project(x = mu_MN3, 'EPSG:4326')
-ssc_MN4 <- terra::project(x = mu_MN4, 'EPSG:4326')
+ssc_MN1 <- terra::project(x = ssc_MN1, 'EPSG:4326')
+ssc_MN2 <- terra::project(x = ssc_MN2, 'EPSG:4326')
+ssc_MN3 <- terra::project(x = ssc_MN3, 'EPSG:4326')
+ssc_MN4 <- terra::project(x = ssc_MN4, 'EPSG:4326')
 
-ssc_WI1 <- terra::project(x = mu_WI1, 'EPSG:4326')
-ssc_WI2 <- terra::project(x = mu_WI2, 'EPSG:4326')
-ssc_WI3 <- terra::project(x = mu_WI3, 'EPSG:4326')
-ssc_WI4 <- terra::project(x = mu_WI4, 'EPSG:4326')
+ssc_WI1 <- terra::project(x = ssc_WI1, 'EPSG:4326')
+ssc_WI2 <- terra::project(x = ssc_WI2, 'EPSG:4326')
+ssc_WI3 <- terra::project(x = ssc_WI3, 'EPSG:4326')
+ssc_WI4 <- terra::project(x = ssc_WI4, 'EPSG:4326')
 
 # Convert to data frame
 df_IL1 <- raster::as.data.frame(x = ssc_IL1, xy = TRUE)
@@ -419,88 +474,8 @@ df_MI <- rbind(df_MI1, df_MI2, df_MI3, df_MI4)
 df_MN <- rbind(df_MN1, df_MN2, df_MN3, df_MN4)
 df_WI <- rbind(df_WI1, df_WI2, df_WI3, df_WI4)
 
-# Extract mention of "floodplain" from geomdesc
-df_IL <- df_IL |>
-  dplyr::mutate(Floodplain = dplyr::if_else(grepl(pattern = 'flood', 
-                                                 x = geomdesc,
-                                                 ignore.case = TRUE), 'Yes', 'No'))
+#### 6. Save ####
 
-df_IN <- df_IN |>
-  dplyr::mutate(Floodplain = dplyr::if_else(grepl(pattern = 'flood',
-                                                  x = geomdesc,
-                                                  ignore.case = TRUE), 'Yes', 'No'))
-
-df_MI <- df_MI |>
-  dplyr::mutate(Floodplain = dplyr::if_else(grepl(pattern = 'flood',
-                                                  x = geomdesc,
-                                                  ignore.case = TRUE), 'Yes', 'No'))
-
-df_MN <- df_MN |>
-  dplyr::mutate(Floodplain = dplyr::if_else(grepl(pattern = 'flood',
-                                                  x = geomdesc,
-                                                  ignore.case = TRUE), 'Yes', 'No'))
-
-df_WI <- df_WI |>
-  dplyr::mutate(Floodplain = dplyr::if_else(grepl(pattern = 'flood',
-                                                  x = geomdesc,
-                                                  ignore.case = TRUE), 'Yes', 'No'))
-
-# Plot to make sure presence of floodplain follows expected pattern
-states <- sf::st_as_sf(maps::map('state', region = 'illinois',
-                                 fill = TRUE, plot = FALSE))
-states <- sf::st_transform(states, crs = 'EPSG:4326')
-
-df_IL |>
-  dplyr::filter(Floodplain == 'Yes') |>
-  ggplot2::ggplot() +
-  ggplot2::geom_point(ggplot2::aes(x = x, y = y), shape = '.') +
-  ggplot2::geom_sf(data = states, color = 'black', fill = NA) +
-  ggplot2::theme_void()
-
-states <- sf::st_as_sf(maps::map('state', region = 'indiana',
-                                 fill = TRUE, plot = FALSE))
-states <- sf::st_transform(states, crs = 'EPSG:4326')
-
-df_IN |>
-  dplyr::filter(Floodplain == 'Yes') |>
-  ggplot2::ggplot() +
-  ggplot2::geom_point(ggplot2::aes(x = x, y = y), shape = '.') +
-  ggplot2::geom_sf(data = states, color = 'black', fill = NA) +
-  ggplot2::theme_void()
-
-states <- sf::st_as_sf(maps::map('state', region = 'michigan',
-                                 fill = TRUE, plot = FALSE))
-states <- sf::st_transform(states, crs = 'EPSG:4326')
-
-df_MI |>
-  dplyr::filter(Floodplain == 'Yes') |>
-  ggplot2::ggplot() +
-  ggplot2::geom_point(ggplot2::aes(x = x, y = y), shape = '.') +
-  ggplot2::geom_sf(data = states, color = 'black', fill = NA) +
-  ggplot2::theme_void()
-
-states <- sf::st_as_sf(maps::map('state', region = 'minnesota',
-                                 fill = TRUE, plot = FALSE))
-states <- sf::st_transform(states, crs = 'EPSG:4326')
-
-df_MN |>
-  dplyr::filter(Floodplain == 'Yes') |>
-  ggplot2::ggplot() +
-  ggplot2::geom_point(ggplot2::aes(x = x, y = y), shape = '.') +
-  ggplot2::geom_sf(data = states, color = 'black', fill = NA) +
-  ggplot2::theme_void()
-
-states <- sf::st_as_sf(maps::map('state', region = 'wisconsin',
-                                 fill = TRUE, plot = FALSE))
-states <- sf::st_transform(states, crs = 'EPSG:4326')
-
-df_WI |>
-  dplyr::filter(Floodplain == 'Yes') |>
-  ggplot2::ggplot() +
-  ggplot2::geom_point(ggplot2::aes(x = x, y = y), shape = '.') +
-  ggplot2::geom_sf(data = states, color = 'black', fill = NA) +
-  ggplot2::theme_void()
-
-# Everything looks good, save
+# Save
 save(df_IL, df_IN, df_MI, df_MN, df_WI,
-     file = 'data/raw/soils/gssurgo_floodplain_030_700m.RData')
+     file = 'data/raw/soils/gssurgo_average_030_700m.RData')
