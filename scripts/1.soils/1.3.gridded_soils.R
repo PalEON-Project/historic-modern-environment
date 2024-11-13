@@ -39,7 +39,7 @@ rm(list = ls())
 load('data/raw/soils/gssurgo_average_030_700m.RData')
 
 # Combine soil estimates for all states
-df_soil3 <- rbind(df_IL, df_IN, df_MI, df_MN, df_WI)
+df_soil <- rbind(df_IL, df_IN, df_MI, df_MN, df_WI)
 
 # Load floodplain data
 load('data/raw/soils/gssurgo_floodplain_030_700m.RData')
@@ -95,27 +95,37 @@ df_flood <- dplyr::select(df_flood, -sfg_id, -point_id)
 #### 4. Load gridded vegetation data ####
 
 ## The following variables are available at
-## https://github.com/amwillson/environ-veg-prediction/
+## https://github.com/amwillson/environ-veg-prediction/data/processed/FIA
+## and https://github.com/amwillson/environ-veg-prediction/data/processed/PLS
+## Instead of loading from the external path, you can add them
+## to the data/processed/ path and load directly from there
 
-# Load gridded FIA data from other repository
-load('~/Google Drive 2/environ-veg-prediction/data/processed/FIA/gridded_all_plots.RData')
+# Load gridded FIA data
+if(file.exists('data/processed/FIA/')){
+  load('data/processed/FIA/gridded_all_plots.RData')
+}else{
+  load('~/Google Drive 2/environ-veg-prediction/data/processed/FIA/gridded_all_plots.RData')
+}
+# Load gridded PLS data
+if(file.exists('data/processed/PLS/')){
+  load('data/processed/PLS/gridded_fcomp_density.RData')
+}else{
+  load('~/Google Drive 2/environ-veg-prediction/data/processed/PLS/gridded_fcomp_density.RData')
+}
 
-# Load gridded PLS data from other repository
-load('~/Google Drive 2/environ-veg-prediction/data/processed/PLS/gridded_fcomp_density.RData')
-
-# Take unique grid cells from both
-# (There are some grid cells in FIA that are not in PLS
-# because they are on political boundaries)
+# Take unique grid cells from each dataset
+# There are some grid cells not in FIA but are in PLS because they have no FIA plots
+# There are some grid cells not in PLS but are in FIA because they are on political boundaries
+# Here, I am taking all grid cells that exist in either OR both datasets
 fia_unique_grid <- density_fcomp_df |>
   dplyr::select(x, y) |>
   dplyr::mutate(loc = paste0(x, '_', y)) |>
-  dplyr::distinct()
-
+  dplyr::distinct() # Should be the same number of grid cells
 pls_unique_grid <- stem_density_agg2 |>
   dplyr::ungroup() |>
   dplyr::select(x, y) |>
   dplyr::mutate(loc = paste0(x, '_', y)) |>
-  dplyr::distinct()
+  dplyr::distinct() # fewer grid cells because there were rows for each taxon in each grid cell
 
 # Combine
 veg_unique_grid <- rbind(fia_unique_grid, pls_unique_grid)
@@ -141,7 +151,7 @@ veg_coords <- veg_unique_grid |>
 
 #### 6. Match soil data to grid cells ####
 
-# For each veg grid cell, find all climate points occurring within
+# For each veg grid cell, find all soil points occurring within
 for(i in 1:nrow(veg_unique_grid)){
   # Take one grid cell's ID and coordinates
   sub <- veg_unique_grid[i,]
@@ -248,6 +258,8 @@ veg_unique_grid |>
 #### 8. Estimate grid cells with no gSSURGO observations ####
 
 # Grid cells with no data
+# If clay is missing, all soil texture is missing. There
+# are no grid cells with clay and without the other soil features
 nodata <- dplyr::filter(veg_unique_grid, is.na(clay))
 
 # For each grid cell with no data

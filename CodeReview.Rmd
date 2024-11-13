@@ -4,16 +4,29 @@
 
 This is just a helper function but it could still benefit from some comments, even just a header describing the arguments and output of the function. 
 
+AW: A description of the function, its motivation, and what it outputs was added to the top of the script.
+
 ## 1.1 Downloading Soils
 
-Some of the comments in this script are more geared towards what you are doing rather than why you are doing it. For instance, why are you using bounding boxes and quadrants rather than the outline of the state? Is it so that the paleon grids work? I am especially curious because you seem to bind the quadrants back together at the end of this script (lines 471-475).
+Some of the comments in this script are more geared towards what you are doing rather than why you are doing it. 
+
+AW: I added motivation explanations below each section heading.
+
+For instance, why are you using bounding boxes and quadrants rather than the outline of the state? Is it so that the paleon grids work? I am especially curious because you seem to bind the quadrants back together at the end of this script (lines 471-475).
+
+AW: I tried to explain this under section 1 of this script. The reason is because downloading for the whole state at one time is only possible at lower resolution because of limitations of the soilDB package and my computer's RAM. Dividing and processing the data in smaller, square chunks allowed me to use higher resolution data. Yes, everything gets combined again at the end, once the data have been processed into a more efficient format. This probably could be done better if I knew more about the soilDB package/raster package but I don't because it's being deprecated. This is sufficient for the scale of soil data we need across current PalEON projects.
 
 What does RAT stand for?
 
+AW: It stands for Raster Attribute Table. I added this to the beginning of the section.
+
 Intermediate outputs from this step (gssurgo_average_030_700m.Rdata) would be helpful to have.
+
+AW: It was added to the data/raw/soils/ path.
 
 The save line (480) points to a folder that does not exist (data/raw/soils). I do not think that the save command can create a new folder in R. Did you move this folder over when you took out the large raw data instead of just moving the data itself? 
 
+AW: I forgot to push the empty folder. I added the folder and its contents based on your above request.
 
 ## 1.2 Downloading Floodplains
 
@@ -25,28 +38,54 @@ gSSURGO changed things so I can't do a lot of tests on the outputs of these step
 
 Intermediate outputs from this step (gssurgo_floodplain_030_700m.Rdata) would be helpful to have. 
 
+AW: I added this to the data/raw/soils/ path.
+
 Same issue with the save line (541) as in script 1.1. Directory data/raw/soils does not exist. 
+
+AW: This is resolved as stated above.
 
 ## 1.3 Gridded soils
 
 This script loads data from the data/raw/soils folder which is not included in the repo. 
 
- I still don't have the inputs to this file but the plotting makes sense for checking that the soil data matches spatially and is plausible.
+AW: Sorry about this. It is now added.
+
+I still don't have the inputs to this file but the plotting makes sense for checking that the soil data matches spatially and is plausible.
  
 Line 64: Here you are using the df_soil data frame. Where is this defined? You seem to have a df_soil3 data frame in line 42, is this what you are plotting? 
- 
- I am a little bit confused about the transformation section in lines 80-93. Since you already converted all the data to EPSG:4326 in the previous two scripts why are you now transforming them to a different projection?
+
+AW: This was an error. The object is now renamed df_soil.
+
+I am a little bit confused about the transformation section in lines 80-93. Since you already converted all the data to EPSG:4326 in the previous two scripts why are you now transforming them to a different projection?
+
+AW: Originally, I was matching things using EPSG:4326. My updated workflow uses EPSG:3175, which is the projection used for all PalEON spatial data. Unfortunately, I can't go back and update this in files 1-1 and 1-2 because gSSURGO is broken. However, translating between these projections does not create any issues in this region. This can be checked by translating back and forth between EPSG:4326 and EPSG:3175 and seeing if there is any difference in the coordinates (there would only be difference on the order of 10e-10 degrees). 
 
 Line 98: This is quite nitpicky but it would be helpful to say where in the repo this data is.
 
+AW: No problem! Fixed.
+
 Lines 101 & 104: These paths go outside the repository. Could you instead have people download them from the other repository but create a standardized place for them within the R project and provide the path to that location?
 
-Line 114-118: I am confused by this section. From your comments in 106-108 I was expecting this section to find cells that match between the two datasets and remove ones that do not match. However, you seem to be making a list of all the locations that are in one of the two datasets. When do you compare across the two? (i.e. it seems you are finding a union rather than an intersection) Also, do you know why the pls dataset goes from ~47,000 rows in stem_density_agg2 to ~7,000 in pls_grid? Are there lots of plots in the same grid cells?
+AW: I added a description of where files should be downloaded to as a comment. Then, I used an if statement to allow the file to be loaded directly from the external repository of from the appropriate directory that the files were downlaoded to if it exists. The new directories are data/processed/PLS and data/processed/FIA.
+
+Line 114-118: I am confused by this section. From your comments in 106-108 I was expecting this section to find cells that match between the two datasets and remove ones that do not match. However, you seem to be making a list of all the locations that are in one of the two datasets. When do you compare across the two? (i.e. it seems you are finding a union rather than an intersection) 
+
+AW: I am taking any grid cell and its coordinates that exist in either of the two dataests OR both of the datasets. We want to estimate soil conditions for every grid cell that exists in either dataset. I added more explanation of this in a comment.
+
+Also, do you know why the pls dataset goes from ~47,000 rows in stem_density_agg2 to ~7,000 in pls_grid? Are there lots of plots in the same grid cells?
+
+AW: This is just because stem_density_agg2 is in long format, with each taxon in each grid cell having a separate row. For pls_unique_grid, I select only the columns associated with a grid cell (coordinates), and then use the distinct() function to take only unique rows, so each row now represents a grid cell, not a taxon. I added an explanation of this to the right of the distinct() function.
 
 Line 144: find all soil points within rather than climate. 
 
+AW: Fixed.
+
 Line 251: Are all the rows without clay missing all the soil variables? Are there no lines where only 1 soil variable is NA? 
 
+AW: If clay is missing, then sand and silt are missing. There are two grid cells where soil texture (clay, sand, silt) are missing, but CaCO3, AWC, and floodplain fraction are not missing. Since they are not complete, I don't want to use them. Therefore, filtering by clay is fine because it takes out any rows that are incomplete. I added a comment to the code about this.
+
 Line 268: Again, very nitpicky, but since we would expect there to be multiple grid cells that are the same minimum distance from that centroid, do you know how the which.min function treats ties? 
+
+AW: If there is more than one closest cell, which.min() will choose the first one in the vector. I think this is fine since we are just borrowing data for a couple cells. We don't really know which one would be better, but at such a coarse scale, we are getting pretty close to the general soil characteristics to those few grid cells (there are only 38 out of ~12,000).
 
 Plots seem sufficient to verify reliability of data processing. 

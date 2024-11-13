@@ -27,6 +27,12 @@ rm(list = ls())
 
 #### 1. Define geographic extent ####
 
+## I create square boxes around each state of interest to download data
+## for each state. I then split each bounding box into four sections.
+## This was done so that smaller sections are downloaded at a time,
+## allowing me to download data at higher resolution from gSSURGO
+## without running into memory/download issues
+
 # Helper function for dividing the state into four quadrants
 source('scripts/1.soils/define_bounds.R')
 
@@ -192,10 +198,14 @@ a_WI4 <- sf::st_bbox(
 
 #### 2. Fetch map unit keys ####
 
-# fetch gSSURGO map unit keys at 100m resolution 
+## This section essentially donwloads the soil data we want from
+## the gSSURGO online database. The soilDB package allows for direct
+## downloads from online databases, including gSSURGO which is what we use here.
+
+# fetch gSSURGO map unit keys at 700m resolution 
 # (highest possible = 30m, lowest possible = 3000m)
 # highest resolution possible for all states
-# (lowest resolution limited by extent of Michigan)
+# (highest resolution limited by extent of Michigan)
 # will need to be rescaled for use in analysis
 mu_IL1 <- soilDB::mukey.wcs(list(aoi = a_IL1, crs = 'EPSG:4326'), db = 'gssurgo', res = 700)
 mu_IL2 <- soilDB::mukey.wcs(list(aoi = a_IL2, crs = 'EPSG:4326'), db = 'gssurgo', res = 700)
@@ -224,7 +234,9 @@ mu_WI4 <- soilDB::mukey.wcs(list(aoi = a_WI4, crs = 'EPSG:4326'), db = 'gssurgo'
 
 #### 3. Extract RAT ####
 
-# extract RAT for thematic mapping for each state
+## Extract Raster Attribute Tables (RATs)
+## Essentially extracts the variables we need from the downloaded data
+
 rat_IL1 <- terra::cats(mu_IL1)[[1]]
 rat_IL2 <- terra::cats(mu_IL2)[[1]]
 rat_IL3 <- terra::cats(mu_IL3)[[1]]
@@ -253,6 +265,9 @@ rat_WI4 <- terra::cats(mu_WI4)[[1]]
 vars <- c('claytotal_r', 'sandtotal_r', 'silttotal_r', 'caco3_r', 'awc_r')
 
 #### 4. Extract soil variables ####
+
+## Now finally extracting the properties we want from the rasters
+## and averaging over depths
 
 # method = weighted average
 # depth = 0-30cm
@@ -388,6 +403,9 @@ levels(mu_WI3) <- tab_WI3[, c('mukey', vars)]
 levels(mu_WI4) <- tab_WI4[, c('mukey', vars)]
 
 #### 5. Format ####
+
+## Formatting to more accessible data format for further manipulation
+## in R (data frame format)
 
 # stack of numerical grids
 ssc_IL1 <- terra::catalyze(mu_IL1)
