@@ -1,0 +1,52 @@
+# Soils
+
+## Define Bounds 
+
+This is just a helper function but it could still benefit from some comments, even just a header describing the arguments and output of the function. 
+
+## 1.1 Downloading Soils
+
+Some of the comments in this script are more geared towards what you are doing rather than why you are doing it. For instance, why are you using bounding boxes and quadrants rather than the outline of the state? Is it so that the paleon grids work? I am especially curious because you seem to bind the quadrants back together at the end of this script (lines 471-475).
+
+What does RAT stand for?
+
+Intermediate outputs from this step (gssurgo_average_030_700m.Rdata) would be helpful to have.
+
+The save line (480) points to a folder that does not exist (data/raw/soils). I do not think that the save command can create a new folder in R. Did you move this folder over when you took out the large raw data instead of just moving the data itself? 
+
+
+## 1.2 Downloading Floodplains
+
+All the state coordinates match those in the previous script. 
+All the numbering of variables match up (i.e. no typos in variable assignment). 
+Projection types match those in the previous script. 
+
+gSSURGO changed things so I can't do a lot of tests on the outputs of these steps but the provided plotting code seems sufficient to test whether the coordinates fall within the correct states and the floodplains make sense with the geography of each state. 
+
+Intermediate outputs from this step (gssurgo_floodplain_030_700m.Rdata) would be helpful to have. 
+
+Same issue with the save line (541) as in script 1.1. Directory data/raw/soils does not exist. 
+
+## 1.3 Gridded soils
+
+This script loads data from the data/raw/soils folder which is not included in the repo. 
+
+ I still don't have the inputs to this file but the plotting makes sense for checking that the soil data matches spatially and is plausible.
+ 
+Line 64: Here you are using the df_soil data frame. Where is this defined? You seem to have a df_soil3 data frame in line 42, is this what you are plotting? 
+ 
+ I am a little bit confused about the transformation section in lines 80-93. Since you already converted all the data to EPSG:4326 in the previous two scripts why are you now transforming them to a different projection?
+
+Line 98: This is quite nitpicky but it would be helpful to say where in the repo this data is.
+
+Lines 101 & 104: These paths go outside the repository. Could you instead have people download them from the other repository but create a standardized place for them within the R project and provide the path to that location?
+
+Line 114-118: I am confused by this section. From your comments in 106-108 I was expecting this section to find cells that match between the two datasets and remove ones that do not match. However, you seem to be making a list of all the locations that are in one of the two datasets. When do you compare across the two? (i.e. it seems you are finding a union rather than an intersection) Also, do you know why the pls dataset goes from ~47,000 rows in stem_density_agg2 to ~7,000 in pls_grid? Are there lots of plots in the same grid cells?
+
+Line 144: find all soil points within rather than climate. 
+
+Line 251: Are all the rows without clay missing all the soil variables? Are there no lines where only 1 soil variable is NA? 
+
+Line 268: Again, very nitpicky, but since we would expect there to be multiple grid cells that are the same minimum distance from that centroid, do you know how the which.min function treats ties? 
+
+Plots seem sufficient to verify reliability of data processing. 
