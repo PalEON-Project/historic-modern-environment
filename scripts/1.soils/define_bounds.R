@@ -1,3 +1,9 @@
+## This function (define_quadrants()) splits a square around each state
+## into four even sections. This is done so that each download is smaller
+## so it can be downloaded at higher resolution
+
+## Returns coordinats for bounding boxes for four quadrants in each state
+
 define_quadrants <- function(xmin, xmax, ymin, ymax){
   xhalf <- (xmax - xmin) / 2
   yhalf <- (ymax - ymin) / 2
