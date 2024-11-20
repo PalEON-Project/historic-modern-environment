@@ -50,3 +50,36 @@ Line 251: Are all the rows without clay missing all the soil variables? Are ther
 Line 268: Again, very nitpicky, but since we would expect there to be multiple grid cells that are the same minimum distance from that centroid, do you know how the which.min function treats ties? 
 
 Plots seem sufficient to verify reliability of data processing. 
+
+# Climate
+
+## 2.1 Process Climate
+
+Similar path comments to the previous sections. The read-in data is located outside of the repo so the user would need to edit the paths themselves for the code to run. Also, the saved data in line 63 and re-loaded data in 69 are absolute paths that depend on the user's setup rather than direct paths that would work with any cloned repo.
+
+Line 69: Why are we reloading the data that we just saved? Environment was not cleared. 
+
+Line 132: What is dl? It doesn't appear to occur anywhere else and is outputting an error. 
+
+Line 137: also saved outside the project. 
+
+There are not any trends in the plots that immediately jump out at me other than the fact that everything is highly correlated. However, no obvious formatting errors or reasons to suspect the climate is not processes correctly. 
+
+## 2.2 Gridded Climate
+ This one takes forever to run. That's not really a critique, just a thing.
+ 
+ The plots seem both appropriate for checking the data processing and they have no obvious issues.
+ 
+## 2.3 Process Modern Climate
+
+This one took even longer to run. The mid-script saving and loading of the data was helpful for this script. 
+
+Plots seem like a good tool for assessing that data processing makes sense. The plots also do not show any big issues so this processing of climate data seems to be completed successfully. 
+
+## 2.4 Gridded Modern Climate
+
+Since you find the unique grid cells and combine the different data sets in exactly the same way in multiple scripts it may make sense to just save it the first time and load the veg_unique_grid in subsequent analyses. 
+
+Also, it may not be the most important because you have done this analysis several times now but your comments in this section don't really add much understanding of what is happening here. Especially in lines 62 and 67. 
+
+The plots all look good!
