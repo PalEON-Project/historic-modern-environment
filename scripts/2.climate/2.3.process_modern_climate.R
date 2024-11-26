@@ -4,6 +4,10 @@
 ## Climate estimates downloaded from PRISM website in October 2024
 ## Formatting into dataframe and doing plotting checks
 
+## NOTE that the PRISM data files are too large for me to store on my
+## local machine, so I stored them on an external drive. These file paths
+## should be changed to match the user's file structure.
+
 ## 1. Loading climate data
 ## 2. Formatting climate data
 ## 3. Summarizing climate over time
@@ -26,11 +30,13 @@
 ## PRISM estimates of maximum monthly vapor pressure deficit for the period 1995-2015
 
 ## Output: /Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_points.RData
+##         OR data/intermediate/climate_points_modern.RData
 ## Monthly estimates of modern climate drivers in the native scale of PRISM data
 ## This is not used. It is saved so that I don't have to re-run the
 ## steps of loading in the data because it takes a long time to convert to points
 
 ## Output: /Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_summary.RData
+##         OR data/intermediate/climate_summary_modern.RData
 ## Temporal summaries of modern climate variables over months of the year and years
 ## in this time period, still on the PRISM native resolution
 ## Used in 2.4.gridded_modern_climate.R
@@ -60,13 +66,27 @@ climate_stack <- raster::crop(climate_stack, ROU)
 climate_points <- raster::rasterToPoints(climate_stack)
 
 # Save all points
-save(climate_points,
-     file = '/Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_points.RData')
+## Either modify the external directory to be consistent with where your
+## modern PRISM data is or save to this directory
+if(!file.exists('/Volumes/FileBackup/SDM_bigdata/PRISM_modern/')){
+  save(climate_points,
+       file = 'data/intermediate/climate_points_modern.RData')
+}else{
+  save(climate_points,
+       file = '/Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_points.RData')
+}
 
 #### 2. Formatting climate data ####
 
-# Re-load saved data
-load('/Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_points.RData')
+# Re-load saved data from either directory (depending on file structure)
+## This is done because saving the points takes a long time,
+## so the user doesn't have to re-run the first part of the script to
+## make changes here
+if(!file.exists('/Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_points.RData')){
+  load('data/intermediate/climate_points_modern.RData')
+}else{
+  load('/Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_points.RData')
+}
 
 # Reformat
 climate_points <- as.data.frame(climate_points)
@@ -132,7 +152,15 @@ clim_sum <- clim_annual |>
 #### 4. Save ####
 
 # Save
-save(clim_sum, file = '/Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_summary.RData')
+## Either modify the external directory to be consistent with where your
+## PRISM data is or save to this directory
+if(!file.exists('/Volumes/FileBackup/SDM_bigdata/PRISM_modern/')){
+  save(clim_sum,
+       file = 'data/intermediate/climate_summary_modern.RData')
+}else{
+  save(clim_sum,
+       file = '/Volumes/FileBackup/SDM_bigdata/PRISM_modern/climate_summary.RData')
+}
 
 #### 5. Plotting checks ####
 

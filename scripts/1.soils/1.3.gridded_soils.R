@@ -19,10 +19,12 @@
 ## Dataframe of floodplain presence variable on 700 x 700 m grid
 
 ## Input: ~/Google Drive 2/environ-veg-prediction/data/processed/FIA/gridded_all_plots.RData
+##        OR data/procesed/FIA/gridded_all_plots.RData
 ## Grid cells in the standard PalEON grid from modern time period
 ## This is from the repository https://github.com/amwillson/environ-veg-prediction/
 
 ## Input: ~/Google Drive 2/environ-veg-prediction/data/processed/PLS/gridded_fcomp_density.RData
+##        OR data/processed/PLS/gridded_fcomp_density.RData
 ## Grid cells in the standard PalEON grid from the historical time period
 ## This is from the repository https://github.com/amwillson/environ-veg-prediction/
 
