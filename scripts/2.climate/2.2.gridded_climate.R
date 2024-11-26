@@ -9,13 +9,16 @@
 ## 5. Save
 
 ## Input: /Volumes/FileBackup/SDM_bigdata/PRISM/climate_summary.RData
+##        OR data/intermediate/climate_summary.RData
 ## Dataframe with temporal climate summaries at native PRISM resolution
 
 ## Input: ~/Google Drive 2/environ-veg-prediction/data/processed/FIA/gridded_all_plots.RData
+##        OR data/processed/FIA/gridded_all_plots.RData
 ## Dataframe with 8 x 8 km grid cells in the modern time period
 ## This is from the repository https://github.com/amwillson/environ-veg-prediction/
 
 ## Input: ~/Google Drive 2/environ-veg-prediction/data/processed/PLS/gridded_fcomp_density.RData
+##        OR data/processed/PLS/gridded_fcomp_density.RData
 ## Dataframe with 8 x 8 km grid cells in the historic time period
 ## This is from the repository https://github.com/amwillson/environ-veg-prediction
 
@@ -29,13 +32,31 @@ rm(list = ls())
 #### 1. Load data ####
 
 # Load climate reconstructions
-load('/Volumes/FileBackup/SDM_bigdata/PRISM/climate_summary.RData')
+# Either change external directory or from local save
+if(!file.exists('/Volumes/FileBackup/SDM_bigdata/PRISM/')){
+  load('data/intermediate/climate_summary.RData')
+}else{
+  load('/Volumes/FileBackup/SDM_bigdata/PRISM/climate_summary.RData')
+}
 
-# Load gridded FIA data from other repository
-load('~/Google Drive 2/environ-veg-prediction/data/processed/FIA/gridded_all_plots.RData')
+## The following variables are available at
+## https://github.com/amwillson/environ-veg-prediction/data/processed/FIA
+## and https://github.com/amwillson/environ-veg-prediction/data/processed/PLS
+## Instead of loading from the external path, you can add them
+## to the data/processed/ path and load directly from there
 
-# Load gridded PLS data from other repository
-load('~/Google Drive 2/environ-veg-prediction/data/processed/PLS/gridded_fcomp_density.RData')
+# Load gridded FIA data
+if(file.exists('data/processed/FIA/')){
+  load('data/processed/FIA/gridded_all_plots.RData')
+}else{
+  load('~/Google Drive 2/environ-veg-prediction/data/processed/FIA/gridded_all_plots.RData')
+}
+# Load gridded PLS data
+if(file.exists('data/processed/PLS/')){
+  load('data/processed/PLS/gridded_fcomp_density.RData')
+}else{
+  load('~/Google Drive 2/environ-veg-prediction/data/processed/PLS/gridded_fcomp_density.RData')
+}
 
 #### 2. Unique grid cells ####
 

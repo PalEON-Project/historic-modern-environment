@@ -96,20 +96,39 @@ Plots seem sufficient to verify reliability of data processing.
 
 Similar path comments to the previous sections. The read-in data is located outside of the repo so the user would need to edit the paths themselves for the code to run. Also, the saved data in line 63 and re-loaded data in 69 are absolute paths that depend on the user's setup rather than direct paths that would work with any cloned repo.
 
+AW: The data downloaded from PRISM are too large for my local machine (and I anticipate for other users). I added a comment at the top of the script to explain that the user should modify the file paths to where the data are downloaded.
+
+AW: I also added an if statement as in the soil section above for saving the outputs locally if you don't have the same file structure as me. This could be modified by the user if they only want to save the output externally. All intermediate/final data product directories were modified in this way.
+
 Line 69: Why are we reloading the data that we just saved? Environment was not cleared. 
+
+AW: I only did this because the first part of the script takes much longer to run than the second half. At the earliest possible point, I made an intermediate save so that you don't have to re-run the entire script if you only make changes to the climate summary part of the script.
 
 Line 132: What is dl? It doesn't appear to occur anywhere else and is outputting an error. 
 
+AW: That was an error. I deleted it. Thanks!
+
 Line 137: also saved outside the project. 
+
+AW: Changed as described above.
 
 There are not any trends in the plots that immediately jump out at me other than the fact that everything is highly correlated. However, no obvious formatting errors or reasons to suspect the climate is not processes correctly. 
 
+AW: Yes, everything is very correlated! I was looking for initial hints of what variables would be appropriate to keep in analyses with uncorrelated covariates. Nothing to be worried about though-- high correlations were expected.
+
 ## 2.2 Gridded Climate
+
+AW: I changed how the intermediate data from step 2-1 is loaded to be consistent with updates to how data were saved in step 2-1. Same with the data fom the external repository as in step 1-3.
+
  This one takes forever to run. That's not really a critique, just a thing.
- 
+
+AW: Yes, I could have written this better, but this was the best way I could think of to make sure that everything works correctly.
+
  The plots seem both appropriate for checking the data processing and they have no obvious issues.
  
 ## 2.3 Process Modern Climate
+
+AW: I added an explanation of the directory structure of PRISM data and why they are in an external repository as in step 2-1. Then, I added alternative file paths for intermediate outputs from this step as in step 2-1.
 
 This one took even longer to run. The mid-script saving and loading of the data was helpful for this script. 
 
@@ -117,7 +136,11 @@ Plots seem like a good tool for assessing that data processing makes sense. The 
 
 ## 2.4 Gridded Modern Climate
 
+AW: I changed how the intermediate data from step 2-1 is loaded to be consistent with updates to how data were saved in step 2-1. Same with the data fom the external repository as in step 1-3.
+
 Since you find the unique grid cells and combine the different data sets in exactly the same way in multiple scripts it may make sense to just save it the first time and load the veg_unique_grid in subsequent analyses. 
+
+AW: I added the same way of loading in the data to each script instead of making an intermediate data product as you suggest. I think that would be a good way to do it too, but I don't think it's inherently *bad* to just re-load the data in each script, so I'm leaving it the way it is.
 
 Also, it may not be the most important because you have done this analysis several times now but your comments in this section don't really add much understanding of what is happening here. Especially in lines 62 and 67. 
 
